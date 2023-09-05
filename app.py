@@ -1,23 +1,18 @@
 from flask import Flask
-from models import db, Post
-import requests
+from flask_sqlalchemy import SQLAlchemy
+from app.routes import posts_bp
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
-db.init_app(app)
+app = Flask(__name__, template_folder='app/templates')
 
-@app.route('/')
-def index():
-    response = requests.get('https://jsonplaceholder.typicode.com/posts')
-    posts_data = response.json()
+# Configuração do banco de dados SQLite temporário para testes
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'  # Use o SQLite em memória para testes
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    for post_data in posts_data:
-        new_post = Post(id=post_data['id'], title=post_data['title'], body=post_data['body'])
-        db.session.add(new_post)
-    
-    db.session.commit()
-    
-    return 'Data has been fetched and saved to the database!'
+# Registra o Blueprint para as rotas de posts
+app.register_blueprint(posts_bp)
+
+# Inicializa o SQLAlchemy
+db = SQLAlchemy(app)
 
 if __name__ == '__main__':
     app.run(debug=True)
