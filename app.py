@@ -1,20 +1,20 @@
-import os
 from flask import Flask
-from app.models import db, Post
-from app.routes import posts_bp  # Importe a blueprint
+from flask_jwt_extended import JWTManager
+from app.models import db
+from app.routes import api
 
 app = Flask(__name__, template_folder='app/templates')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['JWT_SECRET_KEY'] = 'sua_chave_secreta'  # Defina sua própria chave secreta
+jwt = JWTManager(app)
 
-# Defina o caminho absoluto para a pasta 'instance'
-base_dir = os.path.abspath(os.path.dirname(__file__))
-instance_path = os.path.join(base_dir, 'instance')
-
-# Configuração do banco de dados SQLite temporário para testes
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+# Inicializa a extensão do SQLAlchemy
 db.init_app(app)
 
-# Registre a blueprint para as rotas de posts
-app.register_blueprint(posts_bp)
+# Registra as rotas da API
+app.register_blueprint(api)
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
