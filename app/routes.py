@@ -49,7 +49,7 @@ def register():
 # Rota para exibir template básico
 @api.route('/')
 def home():
-    return render_template('home.html')
+    return render_template('index.html')
 
 # Rota para buscar todos os registros (método GET)
 @api.route('/post/get', methods=['GET'])
