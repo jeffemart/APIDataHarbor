@@ -1,23 +1,20 @@
 from flask import Flask
-from models import db, Post
-import requests
+from flask_jwt_extended import JWTManager
+from app.models import db
+from app.routes import api
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+app = Flask(__name__, template_folder='app/templates')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['JWT_SECRET_KEY'] = 'sua_chave_secreta'  # Defina sua própria chave secreta
+jwt = JWTManager(app)
+
+# Inicializa a extensão do SQLAlchemy
 db.init_app(app)
 
-@app.route('/')
-def index():
-    response = requests.get('https://jsonplaceholder.typicode.com/posts')
-    posts_data = response.json()
-
-    for post_data in posts_data:
-        new_post = Post(id=post_data['id'], title=post_data['title'], body=post_data['body'])
-        db.session.add(new_post)
-    
-    db.session.commit()
-    
-    return 'Data has been fetched and saved to the database!'
+# Registra as rotas da API
+app.register_blueprint(api)
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
